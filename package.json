@@ -26,16 +26,6 @@
   "dependencies": {
     "web-push": "^3.6.7"
   },
-  "peerDependencies": {
-    "drizzle-orm": ">=0.30.0-0",
-    "next": ">=14.0.0",
-    "react": ">=18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "drizzle-orm": { "optional": true },
-    "next": { "optional": true },
-    "react": { "optional": true }
-  },
   "devDependencies": {
     "@types/web-push": "^3.6.4",
     "@types/react": "^19",

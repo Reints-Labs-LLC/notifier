@@ -19,6 +19,13 @@ From a consuming site:
 npm install github:Reints-Labs-LLC/notifier
 ```
 
+Assumes the consuming site already has its own `next` (>=14), `react` (>=18),
+and `drizzle-orm` installed — not declared as peerDependencies here on
+purpose, since npm's peer resolution gets confused by a prerelease version
+(e.g. a `1.0.0-beta.x` drizzle-orm) and by the same package appearing in both
+`devDependencies` (needed to build this package) and `peerDependencies`.
+Module resolution finds the consumer's own copies at runtime regardless.
+
 ## One-time setup per site
 
 1. Generate a VAPID keypair for **this site** (never reuse one across sites):
