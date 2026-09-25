@@ -11,6 +11,12 @@ the schema or the dispatcher — see `src/types.ts` (`Channel`, `ChannelAdapter`
 and `src/schema.ts` (`channel` + `destinationKey` columns exist today even
 though only `push` has an adapter).
 
+The route handler factories (`createSubscribeHandler`, `createUnsubscribeHandler`,
+`createTestHandler`) import `next/server`, so they live under a separate
+`notifier/routes` entry point — importing from the package root (schema,
+types, the push adapter, the dispatcher) never pulls in Next, so it works
+fine from a schema file loaded by vitest or plain Node too.
+
 ## Install
 
 From a consuming site:
@@ -42,7 +48,7 @@ Module resolution finds the consumer's own copies at runtime regardless.
 
    ```ts
    // src/app/api/push/subscribe/route.ts
-   import { createSubscribeHandler } from 'notifier'
+   import { createSubscribeHandler } from 'notifier/routes'
    import { db } from '@/db'
    import { notificationSubscriptions } from 'notifier'
    import { getGuestIdFromSession } from '@/lib/guestToken' // this site's own auth

@@ -9,6 +9,7 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": "./dist/src/index.js",
+    "./routes": "./dist/src/routes/index.js",
     "./client/usePushSubscription": "./dist/client/usePushSubscription.js",
     "./client/service-worker.js": "./client/service-worker.js"
   },
