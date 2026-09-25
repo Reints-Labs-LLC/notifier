@@ -14,14 +14,22 @@ export type TestDeps = {
  */
 export function createTestHandler(deps: TestDeps) {
   return async function POST(req: NextRequest) {
-    await deps.assertSameOrigin()
+    try {
+      await deps.assertSameOrigin()
+    } catch {
+      return NextResponse.json({ error: 'invalid origin' }, { status: 403 })
+    }
 
     const userId = await deps.getUserId(req)
     if (!userId) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }
 
-    await deps.sendTest(userId)
+    try {
+      await deps.sendTest(userId)
+    } catch {
+      return NextResponse.json({ error: 'failed to send test notification' }, { status: 502 })
+    }
     return NextResponse.json({ ok: true })
   }
 }

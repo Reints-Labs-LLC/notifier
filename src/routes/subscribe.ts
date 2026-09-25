@@ -15,7 +15,11 @@ export type SubscribeDeps = {
  */
 export function createSubscribeHandler(deps: SubscribeDeps) {
   return async function POST(req: NextRequest) {
-    await deps.assertSameOrigin()
+    try {
+      await deps.assertSameOrigin()
+    } catch {
+      return NextResponse.json({ error: 'invalid origin' }, { status: 403 })
+    }
 
     const userId = await deps.getUserId(req)
     if (!userId) {

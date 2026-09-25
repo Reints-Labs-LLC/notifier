@@ -12,7 +12,11 @@ export type UnsubscribeDeps = {
  */
 export function createUnsubscribeHandler(deps: UnsubscribeDeps) {
   return async function POST(req: NextRequest) {
-    await deps.assertSameOrigin()
+    try {
+      await deps.assertSameOrigin()
+    } catch {
+      return NextResponse.json({ error: 'invalid origin' }, { status: 403 })
+    }
 
     const userId = await deps.getUserId(req)
     if (!userId) {
