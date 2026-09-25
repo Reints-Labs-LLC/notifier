@@ -1,0 +1,47 @@
+{
+  "name": "notifier",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Web Push notification package for Reints Labs sites. Each consuming site owns its own VAPID keys and subscriber table.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./client/usePushSubscription": "./dist/client/usePushSubscription.js",
+    "./client/service-worker.js": "./client/service-worker.js"
+  },
+  "files": [
+    "dist",
+    "client/service-worker.js",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "gen-vapid-keys": "node scripts/gen-vapid-keys.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=0.30.0",
+    "next": ">=14.0.0",
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": { "optional": true },
+    "next": { "optional": true },
+    "react": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/web-push": "^3.6.4",
+    "@types/react": "^19",
+    "drizzle-orm": "^0.45.3",
+    "next": "^16.0.0",
+    "react": "^19.2.4",
+    "typescript": "^5.6.0"
+  }
+}
