@@ -10,6 +10,7 @@
   "exports": {
     ".": "./dist/src/index.js",
     "./routes": "./dist/src/routes/index.js",
+    "./schema": "./dist/src/schema.js",
     "./client/usePushSubscription": "./dist/client/usePushSubscription.js",
     "./client/service-worker.js": "./client/service-worker.js"
   },

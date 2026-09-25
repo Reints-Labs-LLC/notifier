@@ -11,11 +11,21 @@ the schema or the dispatcher — see `src/types.ts` (`Channel`, `ChannelAdapter`
 and `src/schema.ts` (`channel` + `destinationKey` columns exist today even
 though only `push` has an adapter).
 
-The route handler factories (`createSubscribeHandler`, `createUnsubscribeHandler`,
-`createTestHandler`) import `next/server`, so they live under a separate
-`notifier/routes` entry point — importing from the package root (schema,
-types, the push adapter, the dispatcher) never pulls in Next, so it works
-fine from a schema file loaded by vitest or plain Node too.
+The package root (types, the push adapter, the dispatcher) is free of both
+Next and Drizzle, so it works from any consumer regardless of framework or
+storage choice. Two optional pieces live under their own entry points instead
+of the root, so a consumer that doesn't need them never has to resolve their
+dependency:
+
+- The route handler factories (`createSubscribeHandler`, `createUnsubscribeHandler`,
+  `createTestHandler`) import `next/server` — they live under `notifier/routes`.
+  A non-Next consumer (e.g. Netlify Functions) writes its own thin handlers
+  against the root's `createPushAdapter`/`createNotifier` instead.
+- The example Drizzle/Postgres table (`notificationSubscriptions`) imports
+  `drizzle-orm/pg-core` — it lives under `notifier/schema`. A consumer with no
+  database, or one not using Drizzle/Postgres, implements `SubscriptionStore`
+  (see `src/types.ts`) against whatever storage it already has (e.g. Netlify
+  Blobs) instead of importing this schema at all.
 
 ## Install
 
@@ -25,12 +35,15 @@ From a consuming site:
 npm install github:Reints-Labs-LLC/notifier
 ```
 
-Assumes the consuming site already has its own `next` (>=14), `react` (>=18),
-and `drizzle-orm` installed — not declared as peerDependencies here on
-purpose, since npm's peer resolution gets confused by a prerelease version
-(e.g. a `1.0.0-beta.x` drizzle-orm) and by the same package appearing in both
-`devDependencies` (needed to build this package) and `peerDependencies`.
-Module resolution finds the consumer's own copies at runtime regardless.
+Only `web-push` is a hard dependency. If the consuming site uses the
+`notifier/routes` handlers it needs its own `next` (>=14) and `react` (>=18);
+if it uses the `notifier/schema` table it needs its own `drizzle-orm`. Neither
+is declared as a peerDependency here on purpose, since npm's peer resolution
+gets confused by a prerelease version (e.g. a `1.0.0-beta.x` drizzle-orm) and
+by the same package appearing in both `devDependencies` (needed to build this
+package) and `peerDependencies`. Module resolution finds the consumer's own
+copies at runtime regardless — and a consumer that imports neither
+`notifier/routes` nor `notifier/schema` needs neither installed at all.
 
 ## One-time setup per site
 
@@ -40,9 +53,12 @@ Module resolution finds the consumer's own copies at runtime regardless.
    ```
    Add the two printed values to this site's env (Netlify + `.env.local`).
 
-2. Add `notificationSubscriptions` (from `notifier`) to this site's own
+2. If storing subscriptions in Postgres via Drizzle, add
+   `notificationSubscriptions` (from `notifier/schema`) to this site's own
    schema/migrations. Each site keeps its own subscriber data — there is no
-   shared database.
+   shared database. A site with no database (or a different storage choice)
+   skips this step and implements `SubscriptionStore` (see step 4) against
+   whatever it already has instead.
 
 3. Wire the three route handlers, e.g. under `src/app/api/push/`:
 
@@ -50,7 +66,7 @@ Module resolution finds the consumer's own copies at runtime regardless.
    // src/app/api/push/subscribe/route.ts
    import { createSubscribeHandler } from 'notifier/routes'
    import { db } from '@/db'
-   import { notificationSubscriptions } from 'notifier'
+   import { notificationSubscriptions } from 'notifier/schema'
    import { getGuestIdFromSession } from '@/lib/guestToken' // this site's own auth
    import { assertSameOrigin } from '@/lib/security'        // this site's own check
 
@@ -83,7 +99,7 @@ Module resolution finds the consumer's own copies at runtime regardless.
    ```ts
    import { createNotifier, createPushAdapter } from 'notifier'
    import { db } from '@/db'
-   import { notificationSubscriptions } from 'notifier'
+   import { notificationSubscriptions } from 'notifier/schema'
    import { eq } from 'drizzle-orm'
 
    const pushAdapter = createPushAdapter({
